@@ -1,23 +1,16 @@
 /*
  * Create an array that holds all of your cards
  */
-
-let cardsArray = ["fa fa-diamond",
+let cardsIcons = ["fa fa-diamond",
                   "fa fa-paper-plane-o",
                   "fa fa-anchor",
                   "fa fa-bolt",
                   "fa fa-cube",
-                  "fa fa-anchor",
                   "fa fa-leaf",
                   "fa fa-bicycle",
-                  "fa fa-diamond",
-                  "fa fa-bomb",
-                  "fa fa-leaf",
-                  "fa fa-bomb",
-                  "fa fa-bolt",
-                  "fa fa-bicycle",
-                  "fa fa-paper-plane-o",
-                  "fa fa-cube"];
+                  "fa fa-bomb"
+                  ]
+let cardsArray = cardsIcons.concat(cardsIcons);
 
 /*
 * Create the Global Variables to be used
@@ -35,6 +28,15 @@ let shuffledCardsArray = [];
 let countMoves = 0;
 let counterMoves = document.querySelector(".moves");
 
+/* Initialize the Timer that keeps track of the time in seconds that the player plays the game */
+
+let timeSecondsCount = 0;
+let countSeconds = 0;
+let timerCounter = document.querySelector(".timecount");
+
+/* Define and Initialize the Star Rating counter */
+let starCount = 0;
+
 //* Refresh Board Game when the restart button is clicked
 const refreshButton = document.querySelector(".restart");
 refreshButton.addEventListener("click", function() {
@@ -50,7 +52,7 @@ refreshButton.addEventListener("click", function() {
  *   - add each card's HTML to the page
  */
 
-//* Shuffle function from http://stackoverflow.com/a/2450976
+//* Shuffle function from http://stackoverflow.com/a/2450976 */
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -65,7 +67,7 @@ function shuffle(array) {
     return array;
 }
 
-//* Display the Board Game using the shuffled list of cards
+//* Display the Board Game using the shuffled list of cards */
 function displayBoardGame() {
 shuffledCardsArray = shuffle(cardsArray);
 for (var i=0; i < shuffledCardsArray.length; i++) {
@@ -99,6 +101,14 @@ function initializeVariables() {
  counterMoves = document.querySelector(".moves");
  counterMoves.innerHTML = countMoves;
 
+ /* Initialize the Timer that keeps track of the time in seconds that the player plays the game */
+ timeSecondsCount = 0;
+ countSeconds = 0;
+ countSeconds = setInterval(myTimer,1000);
+
+ /* Initialize the Star counter */
+ starCount = 0;
+
 /* Adds the Event Listener "click" to each card on the deck of cards */
  let cardsList = document.getElementsByClassName("card");
  for (var i = 0; i < cardsList.length; i++) {
@@ -106,27 +116,37 @@ function initializeVariables() {
  }
 }
 
-/* Function that shows the symbol of the card when it is clicked */
+//* myTimer Function simply adds 1 for every second*/
+function myTimer() {
+    timeSecondsCount++;
+    document.querySelector(".timecount").innerHTML = timeSecondsCount;
+}
 
+
+/* Function that shows the symbol of the card when it is clicked */
 function showCardImage() {
-   numCardsOpened++;
-   if (numCardsOpened === 1) { //this is the first card opened
+   //*numCardsOpened++;
+   if (!this.classList.contains("open")){ //this condition check to make sure the card clicked is not already opened
+   if (numCardsOpened === 0) { //this is the first card opened
+      numCardsOpened++;
       this.classList.add("open");
       this.classList.add("show");
       firstOpenedCard = this;
-   }
-   else { //this is the second card opened; compare this card with the first card to see if's a match
+    }
+   else if (numCardsOpened === 1) { //this is the second card opened; compare this card with the first card to see if's a match
+        numCardsOpened++;
         this.classList.add("open");
         this.classList.add("show");
         secondOpenedCard = this;
         updateMovesCounter();
         checkCardsMatch();
         checkEndGame();
+    }
   }
+
  }
 
-//* Function that checks if the two opened cards Match
-
+//* Function that checks if the two opened cards Match*/
  function checkCardsMatch() {
   setTimeout(function() {
     numCardsOpened = 0;
@@ -151,7 +171,7 @@ function showCardImage() {
 }, 500);
 }
 
-//* Increments the Moves Counter and Displays it on the page
+//* Increments the Moves Counter and Displays it on the page */
 function updateMovesCounter () {
     countMoves++;
     counterMoves.innerHTML = countMoves;
@@ -161,13 +181,65 @@ function updateMovesCounter () {
 function checkEndGame() {
   setTimeout(function() {
   if (matchedCardsArray.length === 16) {
-    alert("Congratulations! You've reached the end of the Game! Play AGAIN?");
-    deckCards.innerHTML = '';
-    displayBoardGame();
-    initializeVariables();
+    stopTimer();
+    getStarRating();
+    displayEndGameModal();
+    setTimeout(function() {
+      deckCards.innerHTML = '';
+      displayBoardGame();
+      initializeVariables();
+    }, 7000);
   }
 }, 3000);
 }
 
+//* Stops the Game timer
+function stopTimer() {
+  clearInterval(countSeconds);
+}
+
+//* Star Rating Implementation
+//* If time < 40 seconds and Number of Moves <= 20 Then 3 Stars
+//* If time >  40 and < 60 and Number of Moves > 20 and Number of Moves < 30 Then 2 stars
+//* if time >= 60 and Number of Moves > = 30 and < 40 then 1 stars
+//* Else 0 Stars
+function getStarRating() {
+  if ((timeSecondsCount <= 40) && (countMoves <= 20)) {
+    starCount = 3;
+  }
+  else if ((timeSecondsCount > 40) && (timeSecondsCount < 60) && (countMoves > 20) && (countMoves <= 30)) {
+    starCount = 2;
+  }
+  else if ((timeSecondsCount >= 60) && (timeSecondsCount < 80) && (countMoves > 30) && (countMoves <= 40)) {
+    starCount = 1;
+  }
+  else {
+    starCount = 0;
+  }
+}
+
+//* https://www.w3schools.com/howto/howto_css_modals.asp */
+//* Displays the Congratulatory Pop-up Window after the Game Ends */
+function displayEndGameModal() {
+    let modalGameEnds = document.querySelector(".modal");
+    let span = document.querySelector(".close");
+    let finishTime = document.querySelector(".timefinish");
+    let finishMoves = document.querySelector(".movesfinish");
+    let finishStars = document.querySelector(".starsfinish");
+    finishTime.innerHTML = timeSecondsCount;
+    finishMoves.innerHTML = countMoves;
+    finishStars.innerHTML = starCount;
+    modalGameEnds.style.display = "block";
+    span.onclick = function() {
+        modalGameEnds.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modalGameEnds) {
+            modalGameEnds.style.display = "none";
+        }
+    }
+}
+
+//* START THE GAME *//
 displayBoardGame();
 initializeVariables();
